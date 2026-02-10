@@ -10,8 +10,13 @@ import java.util.*;
  */
 
 @Repository
-public interface CarRepository {
+public class CarRepository {
     private final Map<String, Car> cars = new HashMap<>();
+    private int nextId = 1;
+
+    public String generateId() {
+        return String.valueOf(nextId++);
+    }
 
     public List<Car> findAll() {
         return new ArrayList<>(cars.values());

@@ -29,6 +29,9 @@ public class CarService {
         if (carRepository.existsByPlate(car.getPlate())) {
             throw new IllegalArgumentException("Car with plate " + car.getPlate() + " already exists.");
         }
+        if (car.getId() == null || car.getId().isEmpty()) {
+            car.setId(carRepository.generateId());
+        }
         return carRepository.save(car);
     }
 
