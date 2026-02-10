@@ -6,6 +6,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Controller class for managing car-related operations.
+ * It interacts with the CarService for business logic and CarView for user interface.
+ */
+
 @Component
 public class CarController {
     private CarService service;

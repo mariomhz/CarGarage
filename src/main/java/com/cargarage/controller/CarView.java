@@ -6,6 +6,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * View class for displaying car information and interacting with the user.
+ * It provides methods to show menus, display car details, and get user input.
+ */
+
 @Component
 public class CarView {
     private final Scanner scanner = new Scanner(System.in);
