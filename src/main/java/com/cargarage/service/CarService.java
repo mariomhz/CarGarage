@@ -26,6 +26,9 @@ public class CarService {
     }
 
     public Car saveCar(Car car) {
+        if (car.getPlate() == null || car.getPlate().trim().isEmpty()) {
+            throw new IllegalArgumentException("License plate cannot be null or empty.");
+        }
         if (carRepository.existsByPlate(car.getPlate())) {
             throw new IllegalArgumentException("Car with plate " + car.getPlate() + " already exists.");
         }
@@ -38,6 +41,10 @@ public class CarService {
     public Car updateCar(String id, Car updatedCar) {
           Car existingCar = carRepository.findById(id)
               .orElseThrow(() -> new IllegalArgumentException("Car not found"));
+
+          if (updatedCar.getPlate() == null || updatedCar.getPlate().trim().isEmpty()) {
+              throw new IllegalArgumentException("License plate cannot be null or empty.");
+          }
 
           if (!existingCar.getPlate().equals(updatedCar.getPlate())
               && carRepository.existsByPlate(updatedCar.getPlate())) {
