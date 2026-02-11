@@ -7,10 +7,10 @@ import java.util.*;
 
 /** 
  * In-memory repository for managing Car entities. Provides basic CRUD operations and plate uniqueness check.
+ * Implements ICarRepository interface.
  */
 
-@Repository
-public class CarRepository {
+public class InMemoryCarRepository implements ICarRepository {
     private final Map<String, Car> cars = new HashMap<>();
     private int nextId = 1;
 
