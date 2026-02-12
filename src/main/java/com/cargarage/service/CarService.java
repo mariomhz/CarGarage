@@ -1,21 +1,32 @@
 package com.cargarage.service;
 
+import com.cargarage.config.BeanFactory;
 import com.cargarage.model.Car;
-import com.cargarage.repository.CarRepository;
+import com.cargarage.repository.ICarRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Service layer for managing Car entities. Provides business logic for CRUD operations and plate uniqueness validation.
+ * Service class for managing operations.
+ * Implements business logic for handling Car entities, including validation and interaction with the repository.
+ * Uses BeanFactory to obtain the ICarRepository instance, allowing for flexibility in repository implementation.
  */
 
 @Service
 public class CarService {
 
     @Autowired
-    private CarRepository carRepository;
+    private BeanFactory beanFactory;
+
+    private ICarRepository carRepository;
+
+    @PostConstruct
+    public void init() {
+        this.carRepository = beanFactory.getBean(ICarRepository.class);
+    }
 
     public List<Car> getAllCars() {
         return carRepository.findAll();
