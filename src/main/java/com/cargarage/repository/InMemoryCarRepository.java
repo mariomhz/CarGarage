@@ -1,7 +1,6 @@
 package com.cargarage.repository;
 
 import com.cargarage.model.Car;
-import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
