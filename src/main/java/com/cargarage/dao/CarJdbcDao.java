@@ -1,24 +1,22 @@
 package com.cargarage.dao;
 
-/**
- * Data Access Object (DAO) class for Car entity operations using JDBC.
- * This class provides methods to perform CRUD (Create, Read, Update, Delete)
- * operations on Car records in the database using JDBC (Java Database Connectivity).
- */
-
+import com.cargarage.database.DatabaseConnection;
 import com.cargarage.model.Car;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Data Access Object (DAO) class for Car entity operations using JDBC.
+ * This class provides methods to perform CRUD (Create, Read, Update, Delete)
+ * operations on Car records in the database using JDBC (Java Database Connectivity).
+ * Uses DatabaseConnection singleton for efficient connection management.
+ */
+
 public class CarJdbcDao {
     private static final Logger log = Logger.getLogger(CarJdbcDao.class.getName());
-    
-    private static final String URL = "jdbc:h2:./data/garage";
-    private static final String USER = "sa";
-    private static final String PASSWORD = "";
-    private static final String DRIVER = "org.h2.Driver";
+    private final DatabaseConnection dbConnection;
 
     private static final String INSERT_CAR = "INSERT INTO cars (id, brand, model, car_year, plate) VALUES (?, ?, ?, ?, ?)";
     private static final String SELECT_ALL_CARS = "SELECT id, brand, model, car_year, plate FROM cars ORDER BY id";
@@ -26,17 +24,12 @@ public class CarJdbcDao {
     private static final String UPDATE_CAR = "UPDATE cars SET brand = ?, model = ?, car_year = ?, plate = ? WHERE id = ?";
     private static final String DELETE_CAR = "DELETE FROM cars WHERE id = ?";
 
-    static {
-        try {
-            Class.forName(DRIVER);
-        } catch (ClassNotFoundException e) {
-            log.severe("JDBC Driver not found: " + e.getMessage());
-        }
+    public CarJdbcDao() {
+        this.dbConnection = DatabaseConnection.getInstance();
     }
 
     public void create(Car car) throws SQLException {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(INSERT_CAR)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(INSERT_CAR)) {
             logSQL(INSERT_CAR, new Object[]{car.getId(), car.getBrand(), car.getModel(), car.getYear(), car.getPlate()});
             
             stmt.setString(1, car.getId());
@@ -55,8 +48,7 @@ public class CarJdbcDao {
 
     public List<Car> readAll() throws SQLException {
         List<Car> cars = new ArrayList<>();
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             Statement stmt = conn.createStatement();
+        try (Statement stmt = dbConnection.getConnection().createStatement();
              ResultSet rs = stmt.executeQuery(SELECT_ALL_CARS)) {
             logSQL(SELECT_ALL_CARS, null);
             
@@ -72,8 +64,7 @@ public class CarJdbcDao {
     }
 
     public Car readById(String id) throws SQLException {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(SELECT_CAR_BY_ID)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_CAR_BY_ID)) {
             logSQL(SELECT_CAR_BY_ID, new Object[]{id});
             
             stmt.setString(1, id);
@@ -90,8 +81,7 @@ public class CarJdbcDao {
     }
 
     public void update(Car car) throws SQLException {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(UPDATE_CAR)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(UPDATE_CAR)) {
             logSQL(UPDATE_CAR, new Object[]{car.getBrand(), car.getModel(), car.getYear(), car.getPlate(), car.getId()});
             
             stmt.setString(1, car.getBrand());
@@ -109,8 +99,7 @@ public class CarJdbcDao {
     }
 
     public void delete(String id) throws SQLException {
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(DELETE_CAR)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(DELETE_CAR)) {
             logSQL(DELETE_CAR, new Object[]{id});
             
             stmt.setString(1, id);
@@ -128,7 +117,7 @@ public class CarJdbcDao {
         car.setId(rs.getString("id"));
         car.setBrand(rs.getString("brand"));
         car.setModel(rs.getString("model"));
-        car.setYear(rs.getInt("car_year"));  // Map car_year DB column to year Java field
+        car.setYear(rs.getInt("car_year"));  
         car.setPlate(rs.getString("plate"));
         return car;
     }
@@ -150,5 +139,10 @@ public class CarJdbcDao {
     private void handleSQLException(SQLException e) {
         log.severe("SQL Exception occurred: " + e.getMessage());
         log.info("Attempting to reconnect...");
+        try {
+            dbConnection.reconnect();
+        } catch (SQLException reconnectException) {
+            log.severe("Reconnection failed: " + reconnectException.getMessage());
+        }
     }
 }
